@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | ClippedLinks</title>
+    <meta name="description"
+        content="Save your favorite links elegantly without compromise. Open-Source premium bookmark manager for the modern web.">
+    <link rel="icon" type="image/png" href="./assets/img/logo.png">
+    
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+
+    <nav>
+        <div class="nav-left">
+            <a href="/home" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+                <img src="/assets/img/logo.png" alt="ClippedLinks Logo" class="logo">
+                <span class="nav-title">ClippedLinks</span>
+            </a>
+        </div>
+        
+        <div class="nav-right">
+            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                <span id="themeIconContainer">
+                    <i data-lucide="sun" id="themeIcon"></i>
+                </span>
+            </button>
+            
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-trigger" id="profileTrigger">
+                    <img src="https://ui-avatars.com/api/?name=<%= username %>&background=3b82f6&color=fff" alt="Profile" class="profile-pic">
+                </div>
+                <div class="dropdown-menu" id="profileDropdown">
+                    <a href="/settings" class="dropdown-item">
+                        <i data-lucide="settings" style="width: 16px;"></i>
+                        Settings
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/logout" class="dropdown-item" style="color: #ef4444;">
+                        <i data-lucide="log-out" style="width: 16px;"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper">
+        
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <p class="sidebar-title">Menu</p>
+                <a href="/home" class="sidebar-link">
+                    <i data-lucide="bookmark"></i>
+                    Bookmarks
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <p class="sidebar-title">Settings</p>
+                <a href="/settings" class="sidebar-link active">
+                    <i data-lucide="user"></i>
+                    Account
+                </a>
+            </div>
+        </aside>
+
+
+        <main class="main-content">
+            <div class="fade-in">
+                <header style="padding: 0; margin-bottom: 30px;">
+                    <h1 style="font-size: 2rem; font-weight: 700;">Account Settings</h1>
+                </header>
+
+                <div class="form-card" style="max-width: 600px; padding: 32px;">
+                    <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 32px;">
+                        <img src="https://ui-avatars.com/api/?name=<%= username %>&background=3b82f6&color=fff&size=80" alt="Profile" style="border-radius: 20px;">
+                        <div>
+                            <h2 style="font-size: 1.5rem; margin-bottom: 4px;"><%= username %></h2>
+                            <p style="color: var(--text-muted);">Member since <%= createdDate ? new Date(createdDate).toLocaleDateString() : 'N/A' %></p>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 32px;">
+                        <h3 style="color: #ef4444; margin-bottom: 12px;">Danger Zone</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                            Once you delete your account, there is no going back. Please be certain.
+                        </p>
+                        <button id="deleteAccountBtn" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); transition: all 0.2s;">
+                            <i data-lucide="trash-2" style="width: 18px; margin-right: 8px;"></i>
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <script src="/index.js"></script>
+    <script>
+
+        const profileTrigger = document.getElementById('profileTrigger');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', () => {
+            profileDropdown.classList.remove('show');
+        });
+
+        lucide.createIcons();
+
+        const deleteBtn = document.getElementById('deleteAccountBtn');
+        deleteBtn.addEventListener('click', () => {
+            if (confirm('Are you REALLY sure you want to delete your account? This action is IRREVERSIBLE and all your workspaces and bookmarks will be lost forever.')) {
+                const secondConfirm = confirm('Final confirmation: Are you absolutely sure? Type nothing, just click OK to proceed with deletion.');
+                if (secondConfirm) {
+                    window.location.href = '/delete-account';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

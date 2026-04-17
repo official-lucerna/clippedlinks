@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | ClippedLinks</title>
+    <meta name="description"
+        content="Save your favorite links elegantly without compromise. Open-Source premium bookmark manager for the modern web.">
+    <link rel="icon" type="image/png" href="./assets/img/logo.png">
+    
+    
+    <link rel="stylesheet" href="/assets/css/style.css">
+    
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    
+    <nav>
+        <div class="nav-left">
+            <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+                <img src="/assets/img/logo.png" alt="ClippedLinks Logo" class="logo">
+                <span class="nav-title">ClippedLinks</span>
+            </a>
+        </div>
+        <div class="nav-right">
+            <a href="https://github.com/firstdecree/clippedlinks" target="_blank" rel="noopener noreferrer" class="nav-icon-btn" title="GitHub">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            </a>
+            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                <span id="themeIconContainer">
+                    <i data-lucide="sun" id="themeIcon"></i>
+                </span>
+            </button>
+            <a href="/login" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem;">Login</a>
+        </div>
+    </nav>
+
+    
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 120px 20px 40px;">
+        <div class="form-card fade-in">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 24px; text-align: left;">Join ClippedLinks</h2>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Create a password" required autocomplete="new-password">
+                </div>
+                
+                <div id="errorMessage" class="error-message" style="margin-top: 16px;">
+                    <i data-lucide="alert-circle" style="width: 16px;"></i>
+                    Invalid username or password.
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px; padding: 14px;">Create Account</button>
+            </form>
+            
+            <div style="margin-top: 32px; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+                Already have an account? <a href="/login" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Log In</a>
+            </div>
+        </div>
+    </main>
+
+    
+    <footer style="padding: 40px 4%; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+        &copy; 2026 The First Decree. All rights reserved.
+    </footer>
+
+    
+    <script src="/index.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            const errorArea = document.getElementById('errorMessage');
+            errorArea.classList.remove('show');
+            
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+            btn.textContent = 'Creating account...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.text();
+                
+                if (result === "1") {
+                    window.location.href = '/login?registered=true';
+                } else if (result === "2") {
+                    errorArea.textContent = "Registration is disabled.";
+                    errorArea.classList.add('show');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                } else {
+                    errorArea.classList.add('show');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch {
+                errorArea.textContent = "An error occurred. Please try again.";
+                errorArea.classList.add('show');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

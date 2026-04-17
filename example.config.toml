@@ -1,0 +1,16 @@
+[web]
+port = 8080 # The port the website will listen to.
+
+[production]
+allowRegister = false # True = Register is available, anyone can register. False = Register is unavailable.
+
+[security]
+cookieMasterKey = "" # The master key for the cookie encryptsion.
+cookieEncoding = "hex" # hex, base64, latin1
+cookiePBKDF2Iterations = 25670 # The PBKDF2Iterations for the cookie encryption.
+cookieSaltLength = 26 # The length of the cookie salt.
+
+[database] # MongoDB
+clusterURL = "" # The database cluster URI.
+databaseName = "" # The name of the database where the collections reside.
+usersCollection = ""  # The name of the collection where users data (and everything else) will be stored.

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClippedLinks</title>
+    <meta name="description"
+        content="Save your favorite links elegantly without compromise. Open-Source premium bookmark manager for the modern web.">
+    <link rel="icon" type="image/png" href="./assets/img/logo.png">
+    
+    <link rel="stylesheet" href="/assets/css/style.css">
+
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    
+    <nav>
+        <div class="nav-left">
+            <img src="/assets/img/logo.png" alt="ClippedLinks Logo" class="logo">
+            <span class="nav-title">ClippedLinks</span>
+        </div>
+        <div class="nav-right">
+            <a href="https://github.com/firstdecree/clippedlinks" target="_blank" rel="noopener noreferrer"
+                class="nav-icon-btn" title="GitHub">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                    </path>
+                </svg>
+            </a>
+            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                <span id="themeIconContainer">
+                    <i data-lucide="sun" id="themeIcon"></i>
+                </span>
+            </button>
+            <a href="/login" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem;">Login</a>
+        </div>
+    </nav>
+
+    
+    <main class="landing-content">
+        
+        <header class="fade-in">
+            <h1 id="heroTitle">ClippedLinks</h1>
+            <p class="hero-description">Save your favorite links elegantly without compromise.</p>
+            <a href="/register" class="btn btn-primary">Get Started</a>
+
+            <div class="screenshot-container">
+                <img src="/assets/img/screenshot1.png" alt="Application Screenshot" class="screenshot-placeholder">
+            </div>
+        </header>
+
+        
+        <section class="features-section fade-in">
+            <div class="features-header">
+                <h2>Features</h2>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="zap"></i></div>
+                    <div class="feature-card-body">
+                        <h3>User-Friendly</h3>
+                        <p>Designed with simplicity in mind. Navigate through your collection with ease using our
+                            intuitive interface.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="settings"></i></div>
+                    <div class="feature-card-body">
+                        <h3>Customizable</h3>
+                        <p>Personalize your experience. Organize links by categories, tags, and custom themes to suit
+                            your workflow.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="shield"></i></div>
+                    <div class="feature-card-body">
+                        <h3>Private</h3>
+                        <p>Your data is yours alone. We prioritize security and privacy, ensuring your link collection
+                            remains confidential.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="download"></i></div>
+                    <div class="feature-card-body">
+                        <h3>Import / Export</h3>
+                        <p>Seamless data portability. Bring your bookmarks from other browsers or take your collection
+                            anywhere you go.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="layout"></i></div>
+                    <div class="feature-card-body">
+                        <h3>Easy Management</h3>
+                        <p>Stay organized effortlessly. Use batch actions, quick search, and smart folders to keep
+                            everything in order.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+    <footer
+        style="padding: 40px 10%; border-top: 1px solid var(--border-color); margin-top: 80px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+        &copy; 2026 The First Decree. All rights reserved.
+    </footer>
+
+    
+    <script src="/index.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

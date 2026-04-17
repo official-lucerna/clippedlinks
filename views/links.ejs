@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= currentBookmark.name %> | ClippedLinks
+    </title>
+    <meta name="description"
+        content="Save your favorite links elegantly without compromise. Open-Source premium bookmark manager for the modern web.">
+    <link rel="icon" type="image/png" href="./assets/img/logo.png">
+
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        .view-btn {
+            padding: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view-btn.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-color);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .view-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Scrollbar for Links List */
+        .links-list::-webkit-scrollbar { width: 4px; }
+        .links-list::-webkit-scrollbar-track { background: transparent; }
+        .links-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .links-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* Grid View */
+        .layout-grid {
+            flex-direction: column !important;
+        }
+
+        .layout-grid .column-card {
+            width: 100% !important;
+            flex: none !important;
+            min-height: auto !important;
+            height: auto !important;
+        }
+
+        .layout-grid .links-list {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+            gap: 16px !important;
+            flex-direction: row !important;
+        }
+
+        /* List View */
+        .layout-list {
+            flex-direction: column !important;
+        }
+
+        .layout-list .column-card {
+            width: 100% !important;
+            flex: none !important;
+            min-height: auto !important;
+            height: auto !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 0 16px 0 !important;
+        }
+
+        .layout-list .column-card>div.col-handle {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+
+        .layout-list .links-list {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 4px !important;
+        }
+
+        .layout-list .link-item {
+            border-radius: 6px !important;
+            padding: 8px 12px !important;
+            background: transparent !important;
+            transition: background 0.2s;
+        }
+
+        .layout-list .link-item:hover {
+            background: var(--card-bg) !important;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <nav>
+        <div class="nav-left">
+            <a href="/home"
+                style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+                <img src="/assets/img/logo.png" alt="ClippedLinks Logo" class="logo">
+                <span class="nav-title">ClippedLinks</span>
+            </a>
+        </div>
+
+        <div class="nav-middle">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search links...">
+        </div>
+
+        <div class="nav-right">
+            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                <span id="themeIconContainer">
+                    <i data-lucide="sun" id="themeIcon"></i>
+                </span>
+            </button>
+
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-trigger" id="profileTrigger">
+                    <img src="https://ui-avatars.com/api/?name=<%= username %>&background=3b82f6&color=fff"
+                        alt="Profile" class="profile-pic">
+                </div>
+                <div class="dropdown-menu" id="profileDropdown">
+                    <a href="/settings" class="dropdown-item">
+                        <i data-lucide="settings" style="width: 16px;"></i>
+                        Settings
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/logout" class="dropdown-item" style="color: #ef4444;">
+                        <i data-lucide="log-out" style="width: 16px;"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <div style="padding-top: 64px; width: 100%; min-height: 100vh; box-sizing: border-box;">
+        <div style="padding: 40px 3%; width: 100%;">
+            <div class="fade-in">
+                <div style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <a href="<%= currentWorkspace ? '/workspace/' + currentWorkspace.id : '/home' %><%= typeof isShared !== 'undefined' && isShared ? '?key=' + shareKey : '' %>"
+                            class="btn btn-outline" style="padding: 8px; border-radius: 50%;">
+                            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+                        </a>
+                        <div>
+                            <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
+                                <%= currentBookmark.name %>
+                            </h1>
+                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+                                <%= currentBookmark.description %>
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <a href="/bookmark/<%= currentBookmark.id %>/search-engine<%= typeof isShared !== 'undefined' && isShared ? '?key=' + shareKey : '' %>" class="btn btn-outline"
+                            title="Search Engine"
+                            style="padding: 6px 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; text-decoration: none;">
+                            <i data-lucide="globe" style="width: 16px; height: 16px;"></i>
+                            Search Engine
+                        </a>
+                        <div
+                            style="display: flex; background: rgba(255,255,255,0.02); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color); gap: 4px;">
+                            <button class="view-btn active" data-view="columns" title="Columns Layout"><i
+                                    data-lucide="columns" style="width: 16px; height: 16px;"></i></button>
+                            <button class="view-btn" data-view="grid" title="Grid Layout"><i data-lucide="layout-grid"
+                                    style="width: 16px; height: 16px;"></i></button>
+                            <button class="view-btn" data-view="list" title="List Layout"><i data-lucide="list"
+                                    style="width: 16px; height: 16px;"></i></button>
+                        </div>
+                        <% if (typeof isShared === 'undefined' || !isShared) { %>
+                        <button class="btn btn-primary" id="addColumnBtn"
+                            style="padding: 6px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                            Add Column
+                        </button>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div id="columnsContainer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="addColumnModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Add Column</h2>
+            </div>
+
+            <form id="addColumnForm">
+                <div class="form-group">
+                    <label for="columnName" class="form-label">Column Name</label>
+                    <input type="text" id="columnName" class="form-control" placeholder="Resources, Docs..." required>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="closeColModal" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="addLinkModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Add Link</h2>
+            </div>
+
+            <form id="addLinkForm">
+                <div class="form-group">
+                    <label for="linkName" class="form-label">Name</label>
+                    <input type="text" id="linkName" class="form-control" placeholder="Google" required>
+                </div>
+                <div class="form-group">
+                    <label for="linkUrl" class="form-label">URL</label>
+                    <input type="url" id="linkUrl" class="form-control" placeholder="https://google.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="linkDescription" class="form-label">Description (Optional)</label>
+                    <input type="text" id="linkDescription" class="form-control" placeholder="Search engine">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags (Optional, space or comma to confirm)</label>
+                    <div class="tags-input-wrapper" id="tagsWrapper" style="display: flex; flex-wrap: wrap; gap: 6px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; min-height: 42px; align-items: center; cursor: text;">
+                        <div id="tagsContainer" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                        <input type="text" id="tagInput" style="background: transparent; border: none; color: var(--text-color); outline: none; flex: 1; min-width: 60px; font-size: 0.95rem;" placeholder="Add tags...">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="closeLinkModal" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="editLinkModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Edit Link</h2>
+            </div>
+
+            <form id="editLinkForm">
+                <input type="hidden" id="editLinkId">
+                <input type="hidden" id="editLinkColId">
+                <div class="form-group">
+                    <label for="editLinkName" class="form-label">Name</label>
+                    <input type="text" id="editLinkName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLinkUrl" class="form-label">URL</label>
+                    <input type="url" id="editLinkUrl" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLinkDescription" class="form-label">Description (Optional)</label>
+                    <input type="text" id="editLinkDescription" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags (Optional, space or comma to confirm)</label>
+                    <div class="tags-input-wrapper" id="editTagsWrapper" style="display: flex; flex-wrap: wrap; gap: 6px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; min-height: 42px; align-items: center; cursor: text;">
+                        <div id="editTagsContainer" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                        <input type="text" id="editTagInput" style="background: transparent; border: none; color: var(--text-color); outline: none; flex: 1; min-width: 60px; font-size: 0.95rem;" placeholder="Add tags...">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="closeEditLinkModal" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="/index.js"></script>
+    <script>
+
+        const profileTrigger = document.getElementById('profileTrigger');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', () => {
+            profileDropdown.classList.remove('show');
+        });
+
+        profileDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        lucide.createIcons();
+
+
+        let globalSettings = <%- JSON.stringify(currentBookmark.globalSettings || {}) %>;
+        let linksData = <%- JSON.stringify(currentBookmark.links || []) %>;
+        let isShared = <%= typeof isShared !== 'undefined' && isShared %>;
+        let shareKey = '<%= typeof shareKey !== 'undefined' ? shareKey : '' %>';
+        let activeColId = null;
+        let currentViewMode = localStorage.getItem('clippedLinksView') || 'columns';
+
+        const columnsContainer = document.getElementById('columnsContainer');
+        columnsContainer.className = 'layout-' + currentViewMode;
+        columnsContainer.style.cssText = "display: flex; flex-wrap: wrap; gap: 20px; width: 100%; padding-bottom: 32px; box-sizing: border-box; align-items: flex-start;";
+
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            if (btn.dataset.view === currentViewMode) btn.classList.add('active');
+            else btn.classList.remove('active');
+
+            btn.addEventListener('click', (e) => {
+                const mode = e.currentTarget.dataset.view;
+                currentViewMode = mode;
+                localStorage.setItem('clippedLinksView', mode);
+                document.querySelectorAll('.view-btn').forEach(b => {
+                    if (b.dataset.view === mode) b.classList.add('active');
+                    else b.classList.remove('active');
+                });
+                columnsContainer.className = 'layout-' + mode;
+                renderColumns();
+            });
+        });
+
+        function generateUUID() {
+            return Math.random().toString(36).substring(2) + Date.now().toString(36);
+        }
+
+        async function saveState() {
+            try {
+                await fetch('/api/bookmark/update/<%= currentBookmark.id %>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ links: linksData, globalSettings: globalSettings })
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderColumns() {
+            columnsContainer.innerHTML = '';
+
+            let rawLayout = globalSettings.layout || [];
+            rawLayout = rawLayout.map(id => {
+                if (id !== null && !linksData.find(c => c.id === id)) return null;
+                return id;
+            });
+
+            linksData.forEach(col => {
+                if (!rawLayout.includes(col.id)) rawLayout.unshift(col.id);
+            });
+
+            while (rawLayout.length > 0 && rawLayout[rawLayout.length - 1] === null) {
+                rawLayout.pop();
+            }
+
+            const layout = [...rawLayout];
+            if (currentViewMode === 'columns') {
+                while (layout.length % 5 !== 0) layout.push(null);
+                if (layout.length === 0) layout.push(null, null, null, null, null);
+            }
+
+            globalSettings.layout = layout; // synchronise perfect structural shape
+
+            layout.forEach(colId => {
+                if (colId) {
+                    const colData = linksData.find(c => c.id === colId);
+
+                    const colEl = document.createElement('div');
+                    colEl.className = 'column-card';
+                    colEl.dataset.id = colId;
+                    colEl.style.cssText = 'background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; height: 450px; flex: 0 0 calc(20% - 16px); box-sizing: border-box;';
+
+                    colEl.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; cursor: grab;" class="col-handle">
+                            <h3 style="font-size: 1.1rem; font-weight: 600;">${colData.name || 'Column'}</h3>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <% if (typeof isShared === 'undefined' || !isShared) { %>
+                                <button class="add-link-btn btn-outline" data-col="${colId}" style="padding: 4px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; opacity: 0.5; transition: all 0.2s;">
+                                    <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                                </button>
+                                <button class="delete-col-btn btn-outline" data-id="${colId}" style="padding: 4px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; opacity: 0.5; transition: all 0.2s;">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                </button>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="links-list" data-col="${colId}" style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; padding-right: 4px;">
+                            ${(colData.items || []).map(link => `
+                                <div class="link-item" data-id="${link.id}" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <a href="${link.url.startsWith('http') ? link.url : 'https://' + link.url}" target="_blank" style="color: var(--text-color); text-decoration: none; font-weight: 500; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 24px);">${link.name}</a>
+                                        <% if (typeof isShared === 'undefined' || !isShared) { %>
+                                        <div style="display: flex; gap: 4px; margin-top: -4px; margin-right: -4px;">
+                                            <button class="edit-link-btn" data-col="${colId}" data-id="${link.id}" style="padding: 4px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; opacity: 0.5; transition: all 0.2s;">
+                                                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                            <button class="delete-link-btn" data-col="${colId}" data-id="${link.id}" style="padding: 4px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; opacity: 0.5; transition: all 0.2s;">
+                                                <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                        </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    columnsContainer.appendChild(colEl);
+                } else {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.className = 'empty-slot';
+                    emptyEl.style.cssText = 'border: 2px dashed rgba(255,255,255,0.08); border-radius: 16px; height: 450px; flex: 0 0 calc(20% - 16px); box-sizing: border-box; display: flex; align-items: center; justify-content: center; opacity: 0.7;';
+                    columnsContainer.appendChild(emptyEl);
+                }
+            });
+
+            lucide.createIcons();
+            attachEventListeners();
+            initSortable();
+
+            const addBtn = document.getElementById('addColumnBtn');
+            if (addBtn) {
+                addBtn.disabled = false;
+                addBtn.style.opacity = '1';
+                addBtn.innerHTML = '<i data-lucide="plus" style="width: 16px; height: 16px; margin-right: 6px;"></i> Add Column';
+            }
+            lucide.createIcons();
+        }
+
+        let sortableInstance = null;
+        function initSortable() {
+            if (isShared) return;
+            if (sortableInstance) sortableInstance.destroy();
+
+            sortableInstance = new Sortable(columnsContainer, {
+                animation: 150,
+                handle: '.col-handle',
+                onEnd: function () {
+                    const newOrder = [];
+                    Array.from(columnsContainer.children).forEach(el => {
+                        if (el.classList.contains('column-card')) {
+                            newOrder.push(el.dataset.id);
+                        } else {
+                            newOrder.push(null);
+                        }
+                    });
+                    globalSettings.layout = newOrder;
+                    saveState();
+                    renderColumns();
+                }
+            });
+        }
+
+        function attachEventListeners() {
+            document.querySelectorAll('.delete-col-btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => { btn.style.opacity = '1'; btn.style.color = '#ef4444'; });
+                btn.addEventListener('mouseleave', () => { btn.style.opacity = '0.5'; btn.style.color = 'var(--text-muted)'; });
+                btn.addEventListener('click', (e) => {
+                    if (!confirm('Delete this column and all its links?')) return;
+                    const colId = e.currentTarget.dataset.id;
+                    linksData = linksData.filter(c => c.id !== colId);
+                    globalSettings.layout = globalSettings.layout.filter(id => id !== colId);
+                    renderColumns();
+                    saveState();
+                });
+            });
+
+            document.querySelectorAll('.delete-link-btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => { btn.style.opacity = '1'; btn.style.color = '#ef4444'; });
+                btn.addEventListener('mouseleave', () => { btn.style.opacity = '0.5'; btn.style.color = 'var(--text-muted)'; });
+                btn.addEventListener('click', (e) => {
+                    const colId = e.currentTarget.dataset.col;
+                    const linkId = e.currentTarget.dataset.id;
+                    const col = linksData.find(c => c.id === colId);
+                    if (col) {
+                        col.items = col.items.filter(i => i.id !== linkId);
+                        renderColumns();
+                        saveState();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.edit-link-btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => { btn.style.opacity = '1'; btn.style.color = 'var(--text-color)'; });
+                btn.addEventListener('mouseleave', () => { btn.style.opacity = '0.5'; btn.style.color = 'var(--text-muted)'; });
+                btn.addEventListener('click', (e) => {
+                    const colId = e.currentTarget.dataset.col;
+                    const linkId = e.currentTarget.dataset.id;
+                    const col = linksData.find(c => c.id === colId);
+                    if (col) {
+                        const link = col.items.find(i => i.id === linkId);
+                        if (link) {
+                            document.getElementById('editLinkId').value = link.id;
+                            document.getElementById('editLinkColId').value = col.id;
+                            document.getElementById('editLinkName').value = link.name || '';
+                            document.getElementById('editLinkUrl').value = link.url || '';
+                            document.getElementById('editLinkDescription').value = link.description || '';
+                            
+                            editCurrentTags = [...(link.tags || [])];
+                            renderEditTagsInput();
+                            
+                            editLinkModal.classList.add('show');
+                            document.getElementById('editLinkName').focus();
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.add-link-btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => { btn.style.opacity = '1'; btn.style.color = 'var(--accent-color)'; });
+                btn.addEventListener('mouseleave', () => { btn.style.opacity = '0.5'; btn.style.color = 'var(--text-muted)'; });
+                btn.addEventListener('click', (e) => {
+                    activeColId = e.currentTarget.dataset.col;
+                    linkModal.classList.add('show');
+                    document.getElementById('linkName').focus();
+                });
+            });
+        }
+
+
+        const colModal = document.getElementById('addColumnModal');
+        const linkModal = document.getElementById('addLinkModal');
+
+        const addColBtnEl = document.getElementById('addColumnBtn');
+        if (addColBtnEl) {
+            addColBtnEl.addEventListener('click', () => {
+                colModal.classList.add('show');
+                document.getElementById('columnName').focus();
+            });
+        }
+        document.getElementById('closeColModal').addEventListener('click', () => {
+            colModal.classList.remove('show');
+            document.getElementById('addColumnForm').reset();
+        });
+        colModal.addEventListener('click', (e) => {
+            if (e.target === colModal) {
+                colModal.classList.remove('show');
+                document.getElementById('addColumnForm').reset();
+            }
+        });
+
+        document.getElementById('addColumnForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('columnName').value;
+            const colId = generateUUID();
+            linksData.push({ id: colId, name: name, items: [] });
+
+            globalSettings.layout.unshift(colId);
+
+            const lastNullIndex = globalSettings.layout.lastIndexOf(null);
+            if (lastNullIndex > -1) {
+                globalSettings.layout.splice(lastNullIndex, 1);
+            }
+
+            colModal.classList.remove('show');
+            e.target.reset();
+            renderColumns();
+            saveState();
+        });
+
+        document.getElementById('closeLinkModal').addEventListener('click', () => {
+            linkModal.classList.remove('show');
+            document.getElementById('addLinkForm').reset();
+        });
+        linkModal.addEventListener('click', (e) => {
+            if (e.target === linkModal) {
+                linkModal.classList.remove('show');
+                document.getElementById('addLinkForm').reset();
+            }
+        });
+        document.getElementById('addLinkForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!activeColId) return;
+
+            const name = document.getElementById('linkName').value;
+            const url = document.getElementById('linkUrl').value;
+            const description = document.getElementById('linkDescription').value;
+            
+            let val = tagInput.value.trim().replace(/,/g, '');
+            if (val && !currentTags.includes(val)) currentTags.push(val);
+            const tags = [...currentTags];
+
+            const col = linksData.find(c => c.id === activeColId);
+            if (col) {
+                col.items.push({ id: generateUUID(), name, url, description, tags, addedDate: Date.now() });
+            }
+
+            linkModal.classList.remove('show');
+            e.target.reset();
+            currentTags = [];
+            renderTagsInput();
+            renderColumns();
+            saveState();
+        });
+
+        const editLinkModal = document.getElementById('editLinkModal');
+
+        document.getElementById('closeEditLinkModal').addEventListener('click', () => {
+            editLinkModal.classList.remove('show');
+            document.getElementById('editLinkForm').reset();
+        });
+        editLinkModal.addEventListener('click', (e) => {
+            if (e.target === editLinkModal) {
+                editLinkModal.classList.remove('show');
+                document.getElementById('editLinkForm').reset();
+            }
+        });
+        document.getElementById('editLinkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const linkId = document.getElementById('editLinkId').value;
+            const colId = document.getElementById('editLinkColId').value;
+            const name = document.getElementById('editLinkName').value;
+            const url = document.getElementById('editLinkUrl').value;
+            const description = document.getElementById('editLinkDescription').value;
+            
+            let val = document.getElementById('editTagInput').value.trim().replace(/,/g, '');
+            if (val && !editCurrentTags.includes(val)) editCurrentTags.push(val);
+            const tags = [...editCurrentTags];
+
+            const col = linksData.find(c => c.id === colId);
+            if (col) {
+                const link = col.items.find(i => i.id === linkId);
+                if (link) {
+                    link.name = name;
+                    link.url = url;
+                    link.description = description;
+                    link.tags = tags;
+                }
+            }
+
+            editLinkModal.classList.remove('show');
+            e.target.reset();
+            
+            try {
+                await fetch(`/api/link/update/<%= currentBookmark.id %>/${linkId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, url, description, tags })
+                });
+            } catch (e) {
+                console.error('Specific update failed:', e);
+            }
+            
+            renderColumns();
+        });
+
+
+        let currentTags = [];
+        const tagInput = document.getElementById('tagInput');
+        const tagsContainer = document.getElementById('tagsContainer');
+        const tagsWrapper = document.getElementById('tagsWrapper');
+        
+        tagsWrapper.addEventListener('click', () => tagInput.focus());
+        
+        function renderTagsInput() {
+            tagsContainer.innerHTML = currentTags.map((t, index) => `
+                <span style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
+                    ${t}
+                    <button type="button" onclick="removeTag(${index})" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; margin-left: 2px;"><i data-lucide="x" style="width: 12px; height: 12px;"></i></button>
+                </span>
+            `).join('');
+            lucide.createIcons();
+        }
+        
+        window.removeTag = function(index) {
+            currentTags.splice(index, 1);
+            renderTagsInput();
+            tagInput.focus();
+        };
+
+        tagInput.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === ',' || e.key === 'Enter') {
+                e.preventDefault();
+                const val = tagInput.value.trim().replace(/,/g, '');
+                if (val && !currentTags.includes(val)) {
+                    currentTags.push(val);
+                    tagInput.value = '';
+                    renderTagsInput();
+                } else {
+                    tagInput.value = '';
+                }
+            } else if (e.key === 'Backspace' && tagInput.value === '' && currentTags.length > 0) {
+                currentTags.pop();
+                renderTagsInput();
+            }
+        });
+
+
+        let editCurrentTags = [];
+        const editTagInput = document.getElementById('editTagInput');
+        const editTagsContainer = document.getElementById('editTagsContainer');
+        const editTagsWrapper = document.getElementById('editTagsWrapper');
+        
+        editTagsWrapper.addEventListener('click', () => editTagInput.focus());
+        
+        function renderEditTagsInput() {
+            editTagsContainer.innerHTML = editCurrentTags.map((t, index) => `
+                <span style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
+                    ${t}
+                    <button type="button" onclick="removeEditTag(${index})" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; margin-left: 2px;"><i data-lucide="x" style="width: 12px; height: 12px;"></i></button>
+                </span>
+            `).join('');
+            lucide.createIcons();
+        }
+        
+        window.removeEditTag = function(index) {
+            editCurrentTags.splice(index, 1);
+            renderEditTagsInput();
+            editTagInput.focus();
+        };
+
+        editTagInput.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === ',' || e.key === 'Enter') {
+                e.preventDefault();
+                const val = editTagInput.value.trim().replace(/,/g, '');
+                if (val && !editCurrentTags.includes(val)) {
+                    editCurrentTags.push(val);
+                    editTagInput.value = '';
+                    renderEditTagsInput();
+                } else {
+                    editTagInput.value = '';
+                }
+            } else if (e.key === 'Backspace' && editTagInput.value === '' && editCurrentTags.length > 0) {
+                editCurrentTags.pop();
+                renderEditTagsInput();
+            }
+        });
+
+
+        renderColumns();
+    </script>
+</body>
+
+</html>
