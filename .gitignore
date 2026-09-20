@@ -3,3 +3,4 @@ config.toml
 pnpm-lock.yaml
 notes.txt
 .vercel
+vercel-prod

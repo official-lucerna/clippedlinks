@@ -16,7 +16,7 @@
 # ⚙️ Installations
 ## Github
 ```
-git clone https://github.com/firstdecree/clippedlinks
+git clone https://github.com/official-lucerna/clippedlinks
 ```
 
 ## NpmJS
